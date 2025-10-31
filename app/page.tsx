@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import {
@@ -8,44 +9,73 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  DocumentData,
 } from "firebase/firestore";
 
+// Define the TypeScript type for a website
+type Website = {
+  id: string;
+  url: string;
+  username: string;
+  password: string;
+  createdAt: string;
+};
+
 export default function Page() {
-  const [websites, setWebsites] = useState([]);
-  const [newSite, setNewSite] = useState({ url: "", username: "", password: "" });
-  const [editId, setEditId] = useState(null);
+  // State with proper types
+  const [websites, setWebsites] = useState<Website[]>([]);
+  const [newSite, setNewSite] = useState<Omit<Website, "id" | "createdAt">>({
+    url: "",
+    username: "",
+    password: "",
+  });
+  const [editId, setEditId] = useState<string | null>(null);
 
   const sitesRef = collection(db, "websites");
 
+  // Fetch all websites from Firestore
   const fetchSites = async () => {
     const snapshot = await getDocs(sitesRef);
-    setWebsites(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const data: Website[] = snapshot.docs.map(
+      (d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Website, "id">), // cast Firestore data to Website shape
+      })
+    );
+    setWebsites(data);
   };
 
   useEffect(() => {
     fetchSites();
   }, []);
 
+  // Add a new website
   const addWebsite = async () => {
-    if (!newSite.url || !newSite.username || !newSite.password)
+    if (!newSite.url || !newSite.username || !newSite.password) {
       return alert("Please fill in all fields");
+    }
 
     await addDoc(sitesRef, {
       ...newSite,
       createdAt: new Date().toISOString(),
     });
+
     setNewSite({ url: "", username: "", password: "" });
     fetchSites();
   };
 
-  const updateWebsite = async (id) => {
-    await updateDoc(doc(db, "websites", id), newSite);
+  // Update existing website
+  const updateWebsite = async (id: string) => {
+    await updateDoc(doc(db, "websites", id), {
+      ...newSite,
+    });
     setEditId(null);
     setNewSite({ url: "", username: "", password: "" });
     fetchSites();
   };
 
-  const deleteWebsite = async (id) => {
+  // Delete a website
+  const deleteWebsite = async (id: string) => {
     if (confirm("Delete this website?")) {
       await deleteDoc(doc(db, "websites", id));
       fetchSites();
@@ -54,8 +84,14 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-[#1a1a1a] p-6">
-      <img src="https://specialistpracticeexcellence.com.au/wp-content/uploads/2019/11/Minimal-Logo.png" alt="spe" className="w-30 mx-auto mb-5"/>
-      <h1 className="text-3xl font-bold mb-6 text-center">Website Plugin Monitor</h1>
+      <img
+        src="https://specialistpracticeexcellence.com.au/wp-content/uploads/2019/11/Minimal-Logo.png"
+        alt="spe"
+        className="w-30 mx-auto mb-5"
+      />
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Website Plugin Monitor
+      </h1>
 
       <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-[#1a1a1a]">
@@ -67,20 +103,26 @@ export default function Page() {
             className="border border-[#1a1a1a] text-[#1a1a1a] p-2 w-full rounded"
             placeholder="Plugin JSON URL"
             value={newSite.url}
-            onChange={(e) => setNewSite({ ...newSite, url: e.target.value })}
+            onChange={(e) =>
+              setNewSite({ ...newSite, url: e.target.value })
+            }
           />
           <input
             className="border border-[#1a1a1a] text-[#1a1a1a] p-2 w-full rounded"
             placeholder="Username"
             value={newSite.username}
-            onChange={(e) => setNewSite({ ...newSite, username: e.target.value })}
+            onChange={(e) =>
+              setNewSite({ ...newSite, username: e.target.value })
+            }
           />
           <input
             type="password"
             className="border border-[#1a1a1a] text-[#1a1a1a] p-2 w-full rounded"
             placeholder="App Password"
             value={newSite.password}
-            onChange={(e) => setNewSite({ ...newSite, password: e.target.value })}
+            onChange={(e) =>
+              setNewSite({ ...newSite, password: e.target.value })
+            }
           />
 
           {editId ? (
