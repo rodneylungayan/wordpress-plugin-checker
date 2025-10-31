@@ -9,10 +9,9 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  DocumentData,
 } from "firebase/firestore";
 
-// Define the TypeScript type for a website
+// Define the Website type
 type Website = {
   id: string;
   url: string;
@@ -22,7 +21,7 @@ type Website = {
 };
 
 export default function Page() {
-  // State with proper types
+  // Properly typed state
   const [websites, setWebsites] = useState<Website[]>([]);
   const [newSite, setNewSite] = useState<Omit<Website, "id" | "createdAt">>({
     url: "",
@@ -33,13 +32,13 @@ export default function Page() {
 
   const sitesRef = collection(db, "websites");
 
-  // Fetch all websites from Firestore
+  // Fetch websites from Firestore
   const fetchSites = async () => {
     const snapshot = await getDocs(sitesRef);
     const data: Website[] = snapshot.docs.map(
       (d) => ({
         id: d.id,
-        ...(d.data() as Omit<Website, "id">), // cast Firestore data to Website shape
+        ...(d.data() as Omit<Website, "id">),
       })
     );
     setWebsites(data);
@@ -64,7 +63,7 @@ export default function Page() {
     fetchSites();
   };
 
-  // Update existing website
+  // Update an existing website
   const updateWebsite = async (id: string) => {
     await updateDoc(doc(db, "websites", id), {
       ...newSite,
@@ -93,6 +92,7 @@ export default function Page() {
         Website Plugin Monitor
       </h1>
 
+      {/* Form */}
       <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
         <h2 className="text-lg font-semibold mb-4 text-[#1a1a1a]">
           {editId ? "Edit Website" : "Add New Website"}
@@ -143,6 +143,7 @@ export default function Page() {
         </div>
       </div>
 
+      {/* List of websites */}
       <div className="max-w-3xl mx-auto mt-8 space-y-3">
         {websites.map((site) => (
           <div
