@@ -101,7 +101,7 @@ export default function Page() {
         <div className="space-y-3">
           <input
             className="border border-[#1a1a1a] text-[#1a1a1a] p-2 w-full rounded"
-            placeholder="Plugin JSON URL"
+            placeholder="Website URL"
             value={newSite.url}
             onChange={(e) =>
               setNewSite({ ...newSite, url: e.target.value })
